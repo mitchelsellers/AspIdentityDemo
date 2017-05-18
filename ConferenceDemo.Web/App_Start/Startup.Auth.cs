@@ -1,6 +1,7 @@
 ﻿using System;
 using ConferenceDemo.Data;
 using ConferenceDemo.Data.Models;
+using ConferenceDemo.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
@@ -8,11 +9,15 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using ConferenceDemo.Web.Models;
+using Microsoft.Owin.Security.OAuth;
 
 namespace ConferenceDemo.Web
 {
     public partial class Startup
     {
+        public static OAuthAuthorizationServerOptions OAuthOptions { get; private set; }
+        public static string PublicClientId { get; private set; }
+
         // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
@@ -47,24 +52,19 @@ namespace ConferenceDemo.Web
             // This is similar to the RememberMe option when you log in.
             app.UseTwoFactorRememberBrowserCookie(DefaultAuthenticationTypes.TwoFactorRememberBrowserCookie);
 
-            // Uncomment the following lines to enable logging in with third party login providers
-            //app.UseMicrosoftAccountAuthentication(
-            //    clientId: "",
-            //    clientSecret: "");
+            // Configure the application for OAuth based flow
+            PublicClientId = "self";
+            OAuthOptions = new OAuthAuthorizationServerOptions
+            {
+                TokenEndpointPath = new PathString("/Token"),
+                Provider = new ApplicationOAuthProvider(PublicClientId),
+                AuthorizeEndpointPath = new PathString("/Account/ExternalLogin"),
+                AccessTokenExpireTimeSpan = TimeSpan.FromDays(14),
+                AllowInsecureHttp = true //Don't do this in production
+            };
 
-            //app.UseTwitterAuthentication(
-            //   consumerKey: "",
-            //   consumerSecret: "");
-
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
-
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            // Enable the application to use bearer tokens to authenticate users
+            app.UseOAuthBearerTokens(OAuthOptions);
         }
     }
 }

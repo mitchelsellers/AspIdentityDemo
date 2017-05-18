@@ -15,12 +15,18 @@ namespace ConferenceDemo.Data.Models
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<UserProfile> manager)
         {
+            return await GenerateUserIdentityAsync(manager, DefaultAuthenticationTypes.ApplicationCookie);
+        }
+
+        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<UserProfile> manager,
+            string authenticationType)
+        {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
-            var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
-            userIdentity.AddClaims(new[]
-                                   {
-                                       new Claim("MC:TwitterName", TwitterAccount)
-                                   });
+            var userIdentity = await manager.CreateIdentityAsync(this, authenticationType);
+            //userIdentity.AddClaims(new[]
+            //                       {
+            //                           new Claim("MC:TwitterName", TwitterAccount)
+            //                       });
             // Add custom user claims here
             return userIdentity;
         }
